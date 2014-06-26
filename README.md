@@ -20,9 +20,6 @@ Introduction
 
    * **Error Recovery** - When errors occur, Pegasus tries to recover when possible by retrying tasks, retrying the entire workflow, providing workflow-level checkpointing, re-mapping portions of the workflow, trying alternative data sources for staging data, and, when all else fails, providing a rescue workflow containing a description of only the work that remains to be done.
 
-Example Pegasus workflow:
-![](https://confluence.grid.iu.edu/download/attachments/10944710/combined_cnv.png?version=1&modificationDate=1377044087000&api=v2)
-
 As mentioned earlier in this book, OSG has no read/write enabled shared file system across the resources. Jobs are required to either bring inputs along with the job, or as part of the job stage the inputs from a remote location. The following examples highlight how Pegasus can be used to manage workloads in such an environment by providing an abstraction layer around things like data movements and job retries, enabling the users to run larger workloads, spending less time developing job management tool and babysitting their computations.
 
 Pegasus workflows have 4 components:
@@ -174,13 +171,9 @@ Note that when Pegasus plans/submits a workflow, a work directory is created and
    * **_pegasus-remove [wfdir]_**
         Removes a workflow from the system. ([more](http://pegasus.isi.edu/wms/docs/latest/cli-pegasus-remove.php))
 
-During the workflow planning, Pegasus transforms the workflow to make it work well in the target execution environment. Our DAX had 6 independent tasks defined:
+During the workflow planning, Pegasus transforms the workflow to make it work well in the target execution environment. Our DAX had 6 independent tasks defined.
 
-![](https://confluence.grid.iu.edu/download/attachments/10944710/wordfreq-workflow-0.dot.jpg)
-
-The executable workflow has a set of additional tasks added by Pegasus: create scratch dir, data staging in and out, and data cleanup jobs:
-
-![](https://confluence.grid.iu.edu/download/attachments/10944710/wordfreq-workflow-0-full.jpg)
+The executable workflow has a set of additional tasks added by Pegasus: create scratch dir, data staging in and out, and data cleanup jobs.
 
 **Exercise 3:** Check the status of the workflow:
 ```
