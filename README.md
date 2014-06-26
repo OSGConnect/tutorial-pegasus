@@ -4,7 +4,7 @@ OSG Connect Pegasus Tutorial
 Introduction
 ------------
 
-[The Pegasus project](pegasus.isi.edu) encompasses a set of technologies that help workflow-based applications execute in a number of different environments including desktops, campus clusters, grids, and clouds. Pegasus bridges the scientific domain and the execution environment by automatically mapping high-level workflow descriptions onto distributed resources. It automatically locates the necessary input data and computational resources necessary for workflow execution. Pegasus enables scientists to construct workflows in abstract terms without worrying about the details of the underlying execution environment or the particulars of the low-level specifications required by the middleware. Some of the advantages of using Pegasus include:
+[The Pegasus project](https://pegasus.isi.edu) encompasses a set of technologies that help workflow-based applications execute in a number of different environments including desktops, campus clusters, grids, and clouds. Pegasus bridges the scientific domain and the execution environment by automatically mapping high-level workflow descriptions onto distributed resources. It automatically locates the necessary input data and computational resources necessary for workflow execution. Pegasus enables scientists to construct workflows in abstract terms without worrying about the details of the underlying execution environment or the particulars of the low-level specifications required by the middleware. Some of the advantages of using Pegasus include:
 
    * **Portability / Reuse** - User-created workflows can easily be run in different environments without alteration. Pegasus currently runs workflows on top of Condor, Grid infrastrucutures such as Open Science Grid and TeraGrid, Amazon EC2, Nimbus, and many campus clusters. The same workflow can run on a single system or across a heterogeneous set of resources.
 
@@ -21,13 +21,13 @@ Introduction
    * **Error Recovery** - When errors occur, Pegasus tries to recover when possible by retrying tasks, retrying the entire workflow, providing workflow-level checkpointing, re-mapping portions of the workflow, trying alternative data sources for staging data, and, when all else fails, providing a rescue workflow containing a description of only the work that remains to be done.
 
 Example Pegasus workflow:
-![alt text](https://confluence.grid.iu.edu/download/thumbnails/10944710/combined_cnv.png?version=1&modificationDate=1377044087000&api=v2)
+![](https://confluence.grid.iu.edu/download/attachments/10944710/combined_cnv.png?version=1&modificationDate=1377044087000&api=v2)
 
 As mentioned earlier in this book, OSG has no read/write enabled shared file system across the resources. Jobs are required to either bring inputs along with the job, or as part of the job stage the inputs from a remote location. The following examples highlight how Pegasus can be used to manage workloads in such an environment by providing an abstraction layer around things like data movements and job retries, enabling the users to run larger workloads, spending less time developing job management tool and babysitting their computations.
 
 Pegasus workflows have 4 components:
 
-   * **DAX** - Abstract workflow description containing compute steps and dependencies between the steps. This is called abstract because it does not contain data locations and available software. The DAX format is XML, but it is most commonly generated via the provided APIS ([documentation](pegasus.isi.edu/documentation)). [Python](http://pegasus.isi.edu/wms/docs/latest/python/),[Java](http://pegasus.isi.edu/wms/docs/latest/javadoc/edu/isi/pegasus/planner/dax/ADAG.html) and[Perl](http://pegasus.isi.edu/wms/docs/latest/perl/) APIs are available. 
+   * **DAX** - Abstract workflow description containing compute steps and dependencies between the steps. This is called abstract because it does not contain data locations and available software. The DAX format is XML, but it is most commonly generated via the provided APIS ([documentation](http://pegasus.isi.edu/documentation)). [Python](http://pegasus.isi.edu/wms/docs/latest/python/), [Java](http://pegasus.isi.edu/wms/docs/latest/javadoc/edu/isi/pegasus/planner/dax/ADAG.html) and [Perl](http://pegasus.isi.edu/wms/docs/latest/perl/) APIs are available. 
      
    * **Transformation Catalog** - Specifies locations of software used by the workflow
      
@@ -169,18 +169,18 @@ Note that when Pegasus plans/submits a workflow, a work directory is created and
         Provides status on a currently running workflow. ([more](http://pegasus.isi.edu/wms/docs/latest/cli-pegasus-status.php))
    * **_pegasus-analyzer [wfdir]_**
         Provides debugging clues why a workflow failed. Run this after a workflow has failed. ([more](http://pegasus.isi.edu/wms/docs/latest/cli-pegasus-analyzer.php))
-    pegasus-statistics [wfdir]
+   * **_pegasus-statistics [wfdir]_**
         Provides statistics, such as walltimes, on a workflow after it has completed. ([more](http://pegasus.isi.edu/wms/docs/latest/cli-pegasus-statistics.php))
-    pegasus-remove [wfdir]
+   * **_pegasus-remove [wfdir]_**
         Removes a workflow from the system. ([more](http://pegasus.isi.edu/wms/docs/latest/cli-pegasus-remove.php))
 
 During the workflow planning, Pegasus transforms the workflow to make it work well in the target execution environment. Our DAX had 6 independent tasks defined:
 
-![alt text](https://confluence.grid.iu.edu/download/attachments/10944710/wordfreq-workflow-0.dot.jpg?version=3&modificationDate=1377377759000&api=v2)
+![](https://confluence.grid.iu.edu/download/attachments/10944710/wordfreq-workflow-0.dot.jpg)
 
 The executable workflow has a set of additional tasks added by Pegasus: create scratch dir, data staging in and out, and data cleanup jobs:
 
-![alt text](https://confluence.grid.iu.edu/download/attachments/10944710/wordfreq-workflow-0-full.jpg?version=1&modificationDate=1377377606000&api=v2)
+![](https://confluence.grid.iu.edu/download/attachments/10944710/wordfreq-workflow-0-full.jpg)
 
 **Exercise 3:** Check the status of the workflow:
 ```
