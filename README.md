@@ -141,7 +141,6 @@ cat >sites.xml <<EOF
         </head-fs>
         <profile namespace="pegasus" key="style" >condor</profile>
         <profile namespace="condor" key="universe" >vanilla</profile>
-        <!-- profile namespace="condor" key="+ProjectName" >"OSG-Staff"</profile -->
     </site>
 </sitecatalog>
 EOF
