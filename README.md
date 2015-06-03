@@ -1,8 +1,15 @@
-OSG Connect Pegasus Tutorial
-============================
+Table of Contents
+=================
 
-Introduction
-------------
+  * [OSG Connect Pegasus Tutorial](#osg-connect-pegasus-tutorial)
+    * [Introduction](#introduction)
+    * [wordfreq workflow](#wordfreq-workflow)
+    * [Help](#help)
+
+
+# Pegasus Tutorial - Word Frequency
+
+## Introduction
 
 [The Pegasus project](https://pegasus.isi.edu) encompasses a set of technologies that help workflow-based applications execute in a number of different environments including desktops, campus clusters, grids, and clouds. Pegasus bridges the scientific domain and the execution environment by automatically mapping high-level workflow descriptions onto distributed resources. It automatically locates the necessary input data and computational resources necessary for workflow execution. Pegasus enables scientists to construct workflows in abstract terms without worrying about the details of the underlying execution environment or the particulars of the low-level specifications required by the middleware. Some of the advantages of using Pegasus include:
 
@@ -36,14 +43,13 @@ However, for simple workflows, the transformation and replica catalog can be con
 
 For details, please refer to the [Pegasus documentation](http://pegasus.isi.edu/wms/docs/latest/).
 
-wordfreq workflow
------------------
+## wordfreq workflow
 wordfreq is an example application and workflow used to introduce Pegasus tools and concepts. The workflow is available on the OSG Connect host.
 
 **Exercise 1**: create a copy of the Pegasus tutorial and change the working directory to the wordfreq workflow by running the following commands:
 ```
 $ tutorial pegasus
-$ cd osg-pegasus/wordfreq-workflow
+$ cd tutorial-pegasus/wordfreq-workflow
 ```
 In the wordfreq-workflow directory, you will find:
 
@@ -227,3 +233,7 @@ Use pegasus-status and pegasus-statistics to monitor your workflow. Using pegasu
 ```
 $ condor_rm -all
 ```
+
+## Help
+For further assistance or questions, please email ***connect-support@opensciencegrid.org***
+
