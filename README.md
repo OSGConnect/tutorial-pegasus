@@ -1,11 +1,10 @@
-Table of Contents
-=================
+# Pegasus Tutorial - Word Frequency
+
   * [Pegasus Tutorial - Word Frequency](#pegasus-tutorial---word-frequency)
     * [Introduction](#introduction)
     * [wordfreq workflow](#wordfreq-workflow)
     * [Help](#help)
 
-# Pegasus Tutorial - Word Frequency
 
 ## Introduction
 
