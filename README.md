@@ -1,12 +1,11 @@
-# Pegasus Tutorial - Word Frequency
+# Use Pegasus to Word Frequency
 
-  * [Pegasus Tutorial - Word Frequency](#pegasus-tutorial---word-frequency)
-    * [Introduction](#introduction)
-    * [wordfreq workflow](#wordfreq-workflow)
-    * [Help](#help)
+ * [Introduction](#introduction)
+ * [wordfreq workflow](#wordfreq-workflow)
+ * [Getting Help](#getting-help)
 
 
-## Introduction
+## Pegasus Workflow Management System
 
 [The Pegasus project](https://pegasus.isi.edu) encompasses a set of technologies that help workflow-based applications execute in a number of different environments including desktops, campus clusters, grids, and clouds. Pegasus bridges the scientific domain and the execution environment by automatically mapping high-level workflow descriptions onto distributed resources. It automatically locates the necessary input data and computational resources necessary for workflow execution. Pegasus enables scientists to construct workflows in abstract terms without worrying about the details of the underlying execution environment or the particulars of the low-level specifications required by the middleware. Some of the advantages of using Pegasus include:
 
@@ -41,7 +40,8 @@ However, for simple workflows, the transformation and replica catalog can be con
 For details, please refer to the [Pegasus documentation](http://pegasus.isi.edu/wms/docs/latest/).
 
 ## wordfreq workflow
-wordfreq is an example application and workflow used to introduce Pegasus tools and concepts. The workflow is available on the OSG Connect host.
+
+`wordfreq` is an example application and workflow that can be used to introduce Pegasus tools and concepts. The application is available on the OSG Connect login host.
 
 **Exercise 1**: create a copy of the Pegasus tutorial and change the working directory to the wordfreq workflow by running the following commands:
 ```
@@ -50,15 +50,16 @@ $ cd tutorial-pegasus/wordfreq-workflow
 ```
 In the wordfreq-workflow directory, you will find:
 
-   * *inputs*/(directory)
-   * *dax-generator.py*
-   * *pegasusrc*
-   * *submit*
-   * *wordfreq*
+   * `inputs/` (directory)
+   * `dax-generator.py`
+   * `pegasusrc`
+   * `submit`
+   * `wordfreq`
 
-The *inputs*/directory contains 6 public domain ebooks. The application in this example is *wordfreq*, which takes in a text file, does a word frequency analysis, and outputs a file with the frequency table. The task of the workflow is to run *wordfreq* on each book in the *inputs*/directory. A set of independent tasks like this is a common use case on OSG and this workflow can be thought of as template for such problems. For example, instead of wordfreq on ebooks, the application could be protein folding on a set of input structures.
+The `inputs/` directory contains 6 public domain ebooks. The application in this example is `wordfreq`, which takes in a text file, does a word frequency analysis, and outputs a file with the frequency table. The task of the workflow is to run `wordfreq` on each book in the `inputs/` directory. A set of independent tasks like this is a common use case on OSG and this workflow can be thought of as template for such problems. For example, instead of `wordfreq` on ebooks, the application could be protein folding on a set of input structures.
 
-When invoked, the DAX generator (*dax-generator.py*) loops over the *inputs*/directory and creates compute steps for each input. As the wordfreq application only has simple inputs/outputs, and no job dependencies, the dax generator is very simple. See the *dax-generator.py* file below:
+When invoked, the DAX generator (`dax-generator.py`) loops over the `inputs/` directory and creates compute steps for each input. As the `wordfreq` application only has simple inputs/outputs, and no job dependencies, the DAX generator is very simple. See the `dax-generator.py` file below:
+
 ```python
 #!/usr/bin/env python
 from Pegasus.DAX3 import *
@@ -102,7 +103,7 @@ f.close()
 ```
 Note how the DAX is devoid of data movement and job details. These are added by Pegasus when the DAX is planned to an executable workflow, and provides the higher level abstraction mentioned earlier.
 
-In the tarball there is also a *submit* script. This is a convenience script written in bash, and it performs three steps: runs the dax generator, generates a [site catalog](http://pegasus.isi.edu/wms/docs/latest/creating_workflows.php#site), and plans/submits the workflow for execution. The site catalog does not really have to be created every time we plan/submit a workflow, but in this case we have a workflow which is used by different users, so changing the paths to scratch and output filesystems on the fly makes the workflow easier to share. See the *submit* file below:
+In the tarball there is also a `submit` script. This is a convenience script written in bash, and it performs three steps: runs the DAX generator, generates a [site catalog](http://pegasus.isi.edu/wms/docs/latest/creating_workflows.php#site), and plans/submits the workflow for execution. The site catalog does not really have to be created every time we plan/submit a workflow, but in this case we have a workflow which is used by different users, so changing the paths to scratch and output filesystems on the fly makes the workflow easier to share. See the `submit` file below:
 ```bash
 #!/bin/bash
  
@@ -183,7 +184,7 @@ $ pegasus-status [wfdir]
 ```
 You can keep checking the status periodically to see that the workflow is making progress.
 
-**Exercise 4:** Examine a submit file and the *.dag.dagman.out files. Do these look familiar to you from previous modules in the book? Pegasus is based on HTCondor and DAGMan.
+**Exercise 4:** Examine a submit file and the `*.dag.dagman.out` files. Do these look familiar to you from previous modules in the book? Pegasus is based on HTCondor and DAGMan.
 ```
 $ cd [wfdir]
 $ cat wordfreq_ID0000001.sub
@@ -192,7 +193,7 @@ $ cat *.dag.dagman.out
 ...
 ```
 
-**Exercise 5:** Keep checking progress with pegasus-status. Once the workflow is done, display statistics with pegasus-statistics:
+**Exercise 5:** Keep checking progress with `pegasus-status`. Once the workflow is done, display statistics with `pegasus-statistics`:
 ```
 $ pegasus-status [wfdir]
 $ pegasus-statistics [wfdir]
@@ -200,7 +201,7 @@ $ pegasus-statistics [wfdir]
 ```
  
 
-**Exercise 6:** cd to the output directory and look at the outputs. Which is the most common word used in the 6 books? Hint:
+**Exercise 6:** `cd` to the output directory and look at the outputs. Which is the most common word used in the 6 books? Hint:
 ```
 $ cd ~/data/outputs/
 $ head -n 3 *.out
@@ -211,7 +212,7 @@ $ head -n 3 *.out
 ```
 $ cp many-more-inputs/* inputs/
 ```
-As these tasks are really short, let's tell Pegasus to cluster multiple tasks together into jobs. If you do not do this step, the jobs will still run, but not very efficiently. This is because every job has a small scheduling overhead. For short jobs, the overhead is obvious. If we make the jobs longer, the scheduling overhead becomes negligible. To enable the clustering feature, edit the dax-generator.py script. Find the line reading:
+As these tasks are really short, let's tell Pegasus to cluster multiple tasks together into jobs. If you do not do this step, the jobs will still run, but not very efficiently. This is because every job has a small scheduling overhead. For short jobs, the overhead is obvious. If we make the jobs longer, the scheduling overhead becomes negligible. To enable the clustering feature, edit the `dax-generator.py` script. Find the line reading:
 ```
 wordfreq.addProfile(Profile(Namespace.PEGASUS, "clusters.size", 1))
 ```
@@ -223,7 +224,7 @@ This informs Pegasus that it is ok to cluster up to 50 of the wordfreq tasks in 
 ```
 $ ./submit
 ```
-Use pegasus-status and pegasus-statistics to monitor your workflow. Using pegasus-statistics, determine how many jobs ended up in your workflow.
+Use `pegasus-status` and `pegasus-statistics` to monitor your workflow. Using `pegasus-statistics`, determine how many jobs ended up in your workflow.
 
  
 **Exercise 8:** Cleanup. If you still have jobs in the queue, but want to move to the next tutorial in the book, you can remove all **your** jobs from the system with:
@@ -231,6 +232,5 @@ Use pegasus-status and pegasus-statistics to monitor your workflow. Using pegasu
 $ condor_rm -all
 ```
 
-## Help
-For further assistance or questions, please email ***connect-support@opensciencegrid.org***
-
+## Getting Help
+For assistance or questions, please email the OSG User Support team  at `user-support@opensciencegrid.org` or visit the [help desk and community forums](http://support.opensciencegrid.org).
