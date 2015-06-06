@@ -1,4 +1,4 @@
-# Use Pegasus to Manage wordfreq tasks
+# Use Pegasus to Manage `wordfreq` Tasks
 
  * [Introduction](#introduction)
  * [wordfreq workflow](#wordfreq-workflow)
