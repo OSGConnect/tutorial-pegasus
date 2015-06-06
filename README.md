@@ -1,11 +1,11 @@
-# Use Pegasus to Manage `wordfreq` Tasks
+# Learn Pegasus by Running the `wordfreq` Application Over eBooks 
 
  * [Introduction](#introduction)
  * [wordfreq workflow](#wordfreq-workflow)
  * [Getting Help](#getting-help)
 
 
-## Pegasus Workflow Management System
+## Introduction
 
 [The Pegasus project](https://pegasus.isi.edu) encompasses a set of technologies that help workflow-based applications execute in a number of different environments including desktops, campus clusters, grids, and clouds. Pegasus bridges the scientific domain and the execution environment by automatically mapping high-level workflow descriptions onto distributed resources. It automatically locates the necessary input data and computational resources necessary for workflow execution. Pegasus enables scientists to construct workflows in abstract terms without worrying about the details of the underlying execution environment or the particulars of the low-level specifications required by the middleware. Some of the advantages of using Pegasus include:
 
