@@ -1,4 +1,4 @@
-# Learn Pegasus by Running the `wordfreq` Application Over eBooks 
+[title]: - "Pegasus"
 
  * [Introduction](#introduction)
  * [wordfreq workflow](#wordfreq-workflow)
