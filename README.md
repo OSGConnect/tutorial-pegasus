@@ -1,4 +1,5 @@
 [title]: - "Pegasus"
+[TOC]
 
 
 ## Introduction
