@@ -1,9 +1,5 @@
 [title]: - "Pegasus"
 
- * [Introduction](#introduction)
- * [wordfreq workflow](#wordfreq-workflow)
- * [Getting Help](#getting-help)
-
 
 ## Introduction
 
