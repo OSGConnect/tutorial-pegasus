@@ -40,8 +40,10 @@ For details, please refer to the [Pegasus documentation](http://pegasus.isi.edu/
 `wordfreq` is an example application and workflow that can be used to introduce Pegasus tools and concepts. The application is available on the OSG Connect login host.
 
 **Exercise 1**: create a copy of the Pegasus tutorial and change the working directory to the wordfreq workflow by running the following commands:
+
 	$ tutorial pegasus
 	$ cd tutorial-pegasus/wordfreq-workflow
+	
 In the wordfreq-workflow directory, you will find:
 
    * `inputs/` (directory)
@@ -93,9 +95,12 @@ When invoked, the DAX generator (`dax-generator.py`) loops over the `inputs/` di
 	f = open("dax.xml", "w")
 	dax.writeXML(f)
 	f.close()
+	
 Note how the DAX is devoid of data movement and job details. These are added by Pegasus when the DAX is planned to an executable workflow, and provides the higher level abstraction mentioned earlier.
 
 In the tarball there is also a `submit` script. This is a convenience script written in bash, and it performs three steps: runs the DAX generator, generates a [site catalog](http://pegasus.isi.edu/wms/docs/latest/creating_workflows.php#site), and plans/submits the workflow for execution. The site catalog does not really have to be created every time we plan/submit a workflow, but in this case we have a workflow which is used by different users, so changing the paths to scratch and output filesystems on the fly makes the workflow easier to share. See the `submit` file below:
+
+
 	#!/bin/bash
 	 
 	set -e
@@ -189,18 +194,27 @@ You can keep checking the status periodically to see that the workflow is making
  
 
 **Exercise 7:** Want to try something larger? Copy the additional 994 ebooks from the many-more-inputs/ directory to the inputs/ directory:
+
 	$ cp many-more-inputs/* inputs/
+
 As these tasks are really short, let's tell Pegasus to cluster multiple tasks together into jobs. If you do not do this step, the jobs will still run, but not very efficiently. This is because every job has a small scheduling overhead. For short jobs, the overhead is obvious. If we make the jobs longer, the scheduling overhead becomes negligible. To enable the clustering feature, edit the `dax-generator.py` script. Find the line reading:
+
 	wordfreq.addProfile(Profile(Namespace.PEGASUS, "clusters.size", 1))
+
 Change that line to:
+
 	wordfreq.addProfile(Profile(Namespace.PEGASUS, "clusters.size", 50))
+
 This informs Pegasus that it is ok to cluster up to 50 of the wordfreq tasks in each job. Save the file, and submit the workflow:
+
 	$ ./submit
+
 Use `pegasus-status` and `pegasus-statistics` to monitor your workflow. Using `pegasus-statistics`, determine how many jobs ended up in your workflow.
 
  
 **Exercise 8:** Cleanup. If you still have jobs in the queue, but want to move to the next tutorial in the book, you can remove all **your** jobs from the system with:
+
 	$ condor_rm -all
 
 ## Getting Help
-For assistance or questions, please email the OSG User Support team  at `user-support@opensciencegrid.org` or visit the [help desk and community forums](http://support.opensciencegrid.org).
+For assistance or questions, please email the OSG User Support team  at <mailto:user-support@opensciencegrid.org> or visit the [help desk and community forums](http://support.opensciencegrid.org).
