@@ -11,37 +11,29 @@ export PYTHONPATH=`pegasus-config --python`
 # create the site catalog
 cat >sites.xml <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
-<sitecatalog xmlns="http://pegasus.isi.edu/schema/sitecatalog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pegasus.isi.edu/schema/sitecatalog http://pegasus.isi.edu/schema/sc-3.0.xsd" version="3.0">
-    <site  handle="local" arch="x86_64" os="LINUX">
-        <head-fs>
-            <scratch>
-                <shared>
-                    <file-server protocol="file" url="file://" mount-point="/home/$USER/data/scratch"/>
-                    <internal-mount-point mount-point="/home/$USER/data/scratch"/>
-                </shared>
-            </scratch>
-            <storage>
-                <shared>
-                    <file-server protocol="file" url="file://" mount-point="/home/$USER/data/outputs"/>
-                    <internal-mount-point mount-point="/home/$USER/data/outputs"/>
-                </shared>
-            </storage>
-        </head-fs>
+<sitecatalog xmlns="http://pegasus.isi.edu/schema/sitecatalog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pegasus.isi.edu/schema/sitecatalog http://pegasus.isi.edu/schema/sc-4.0.xsd" version="4.0">
+
+    <site  handle="local" arch="x86_64">
+        <directory type="shared-scratch" path="/home/$USER/data/scratch">
+            <file-server operation="all" url="file:///home/$USER/data/scratch"/>
+        </directory>
+        <directory type="local-storage" path="/home/$USER/data/outputs">
+            <file-server operation="all" url="file:///home/$USER/data/outputs"/>
+        </directory>
     </site>
+
     <site  handle="condorpool" arch="x86_64" os="LINUX">
-        <head-fs>
-            <scratch />
-            <storage />
-        </head-fs>
         <profile namespace="pegasus" key="style" >condor</profile>
         <profile namespace="condor" key="universe" >vanilla</profile>
+        <profile namespace="condor" key="requirements" >OSGVO_OS_STRING == "RHEL 6" &amp;&amp; HAS_MODULES == True</profile>
     </site>
+
 </sitecatalog>
 EOF
 
 # plan and submit the  workflow
 pegasus-plan \
-    --conf pegasusrc \
+    --conf pegasus.conf \
     --sites condorpool \
     --dir /home/$USER/data/workflows \
     --output-site local \
