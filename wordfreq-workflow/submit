@@ -4,6 +4,16 @@ set -e
 
 TOPDIR=`pwd`
 
+# determine a good working directory based on the environment
+WORK_DIR=$HOME/workflows
+if [ "X$WORK" != "X" ]; then
+    # HCC
+    WORK_DIR=$WORK/workflows
+elif [ -e "$HOME/data" ]; then
+    # OSG Connect
+    WORK_DIR=$HOME/data/workflows
+fi
+
 # generate the dax
 export PYTHONPATH=`pegasus-config --python`
 ./dax-generator.py
@@ -14,11 +24,11 @@ cat >sites.xml <<EOF
 <sitecatalog xmlns="http://pegasus.isi.edu/schema/sitecatalog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pegasus.isi.edu/schema/sitecatalog http://pegasus.isi.edu/schema/sc-4.0.xsd" version="4.0">
 
     <site  handle="local" arch="x86_64">
-        <directory type="shared-scratch" path="/home/$USER/data/scratch">
-            <file-server operation="all" url="file:///home/$USER/data/scratch"/>
+        <directory type="shared-scratch" path="$WORK_DIR/scratch">
+            <file-server operation="all" url="file://$WORK_DIR/scratch"/>
         </directory>
-        <directory type="local-storage" path="/home/$USER/data/outputs">
-            <file-server operation="all" url="file:///home/$USER/data/outputs"/>
+        <directory type="local-storage" path="$WORK_DIR/outputs">
+            <file-server operation="all" url="file://$WORK_DIR/outputs"/>
         </directory>
     </site>
 
@@ -34,8 +44,9 @@ EOF
 # plan and submit the  workflow
 pegasus-plan \
     --conf pegasus.conf \
+    --dir $WORK_DIR/runs \
+    --relative-dir `date +'%s'` \
     --sites condorpool \
-    --dir /home/$USER/data/workflows \
     --output-site local \
     --dax dax.xml \
     --cluster horizontal \
