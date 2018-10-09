@@ -4,42 +4,22 @@ set -e
 
 TOPDIR=`pwd`
 
-# determine a good working directory based on the environment
-WORK_DIR=$HOME/workflows
-if [ "X$WORK" != "X" ]; then
-    # HCC
-    WORK_DIR=$WORK/workflows
-elif [ -e "$HOME/data" ]; then
-    # OSG Connect
-    WORK_DIR=$HOME/data/workflows
-fi
+# use the latest Pegasus development version
+export PATH=/cvmfs/oasis.opensciencegrid.org/osg/projects/pegasus/rhel7/4.9.0dev/bin:$PATH
+
+# stashcache is used for data transfers
+module load stashcache
+
+# a good working directory
+export WORK_DIR=/local-scratch/$USER/workflows
+mkdir -p $WORK_DIR
 
 # generate the dax
 export PYTHONPATH=`pegasus-config --python`
 ./dax-generator.py
 
-# create the site catalog
-cat >sites.xml <<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<sitecatalog xmlns="http://pegasus.isi.edu/schema/sitecatalog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pegasus.isi.edu/schema/sitecatalog http://pegasus.isi.edu/schema/sc-4.0.xsd" version="4.0">
-
-    <site  handle="local" arch="x86_64">
-        <directory type="shared-scratch" path="$WORK_DIR/scratch">
-            <file-server operation="all" url="file://$WORK_DIR/scratch"/>
-        </directory>
-        <directory type="local-storage" path="$WORK_DIR/outputs">
-            <file-server operation="all" url="file://$WORK_DIR/outputs"/>
-        </directory>
-    </site>
-
-    <site  handle="condorpool" arch="x86_64" os="LINUX">
-        <profile namespace="pegasus" key="style" >condor</profile>
-        <profile namespace="condor" key="universe" >vanilla</profile>
-        <profile namespace="condor" key="requirements" >OSGVO_OS_STRING == "RHEL 6" &amp;&amp; HAS_MODULES == True</profile>
-    </site>
-
-</sitecatalog>
-EOF
+# create the site catalog from the template
+envsubst < "sites.xml.template" > "sites.xml"
 
 # plan and submit the  workflow
 pegasus-plan \
@@ -47,6 +27,7 @@ pegasus-plan \
     --dir $WORK_DIR/runs \
     --relative-dir `date +'%s'` \
     --sites condorpool \
+    --staging-site stash \
     --output-site local \
     --dax dax.xml \
     --cluster horizontal \
