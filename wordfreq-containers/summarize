@@ -1,0 +1,12 @@
+#!/bin/bash
+
+OUT_FILE=summary.txt
+
+for FILE in `ls *.txt.out`; do
+    echo $FILE >>$OUT_FILE
+    head -n 5 $FILE >>$OUT_FILE
+    echo "" >>$OUT_FILE
+done
+
+
+

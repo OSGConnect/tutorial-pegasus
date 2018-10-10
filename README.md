@@ -24,7 +24,7 @@ As mentioned earlier in this book, OSG has no read/write enabled shared file sys
 
 Pegasus workflows have 4 components:
 
-   * **DAX** - Abstract workflow description containing compute steps and dependencies between the steps. This is called abstract because it does not contain data locations and available software. The DAX format is XML, but it is most commonly generated via the provided APIS ([documentation](http://pegasus.isi.edu/documentation)). [Python](http://pegasus.isi.edu/wms/docs/latest/python/), [Java](http://pegasus.isi.edu/wms/docs/latest/javadoc/edu/isi/pegasus/planner/dax/ADAG.html) and [Perl](http://pegasus.isi.edu/wms/docs/latest/perl/) APIs are available. 
+   * **DAX** - Abstract workflow description containing compute steps and dependencies between the steps. This is called abstract because it does not contain data locations and available software. The DAX format is XML, but it is most commonly generated via the provided APIS ([documentation](https://pegasus.isi.edu/documentation)). [Python](https://pegasus.isi.edu/documentation/python/), [Java](https://pegasus.isi.edu/documentation/javadoc/edu/isi/pegasus/planner/dax/ADAG.html) and [Perl](https://pegasus.isi.edu/documentation/perl/) APIs are available. 
      
    * **Transformation Catalog** - Specifies locations of software used by the workflow
      
@@ -45,9 +45,9 @@ This example is using [OSG StashCache](https://derekweitzel.com/2018/09/26/stash
 **Exercise 1**: create a copy of the Pegasus tutorial and change the working directory to the wordfreq workflow by running the following commands:
 
 	$ tutorial pegasus
-	$ cd tutorial-pegasus/wordfreq-workflow
+	$ cd tutorial-pegasus/wordfreq
 	
-In the wordfreq-workflow directory, you will find:
+In the `wordfreq/` directory, you will find:
 
    * `inputs/` (directory)
    * `dax-generator.py`
@@ -103,7 +103,7 @@ When invoked, the DAX generator (`dax-generator.py`) loops over the `inputs/` di
 	
 Note how the DAX is devoid of data movement and job details. These are added by Pegasus when the DAX is planned to an executable workflow, and provides the higher level abstraction mentioned earlier.
 
-In the tarball there is also a `submit` script. This is a convenience script written in bash, and it performs three steps: runs the DAX generator, generates a [site catalog](http://pegasus.isi.edu/wms/docs/latest/creating_workflows.php#site), and plans/submits the workflow for execution. The site catalog does not really have to be created every time we plan/submit a workflow, but in this case we have a workflow which is used by different users, so changing the paths to scratch and output filesystems on the fly makes the workflow easier to share. See the `submit` file below:
+In the tarball there is also a `submit` script. This is a convenience script written in bash, and it performs three steps: runs the DAX generator, generates a [site catalog](https://pegasus.isi.edu/documentation/creating_workflows.php#site), and plans/submits the workflow for execution. The site catalog does not really have to be created every time we plan/submit a workflow, but in this case we have a workflow which is used by different users, so changing the paths to scratch and output filesystems on the fly makes the workflow easier to share. See the `submit` file below:
 
 
     #!/bin/bash
@@ -149,13 +149,13 @@ In the tarball there is also a `submit` script. This is a convenience script wri
 Note that when Pegasus plans/submits a workflow, a work directory is created and presented in the output. This directory is the handle to the workflow instance and used by Pegasus command line tools. Some useful tools to know about:
 
    * `_pegasus-status -v [wfdir]_`
-        Provides status on a currently running workflow. ([more](http://pegasus.isi.edu/wms/docs/latest/cli-pegasus-status.php))
+        Provides status on a currently running workflow. ([more](https://pegasus.isi.edu/documentation/cli-pegasus-status.php))
    * `_pegasus-analyzer [wfdir]_`
-        Provides debugging clues why a workflow failed. Run this after a workflow has failed. ([more](http://pegasus.isi.edu/wms/docs/latest/cli-pegasus-analyzer.php))
+        Provides debugging clues why a workflow failed. Run this after a workflow has failed. ([more](https://pegasus.isi.edu/documentation/cli-pegasus-analyzer.php))
    * `_pegasus-statistics [wfdir]_`
-        Provides statistics, such as walltimes, on a workflow after it has completed. ([more](http://pegasus.isi.edu/wms/docs/latest/cli-pegasus-statistics.php))
+        Provides statistics, such as walltimes, on a workflow after it has completed. ([more](https://pegasus.isi.edu/documentation/cli-pegasus-statistics.php))
    * `_pegasus-remove [wfdir]_`
-        Removes a workflow from the system. ([more](http://pegasus.isi.edu/wms/docs/latest/cli-pegasus-remove.php))
+        Removes a workflow from the system. ([more](https://pegasus.isi.edu/documentation/cli-pegasus-remove.php))
 
 During the workflow planning, Pegasus transforms the workflow to make it work well in the target execution environment. Our DAX had 6 independent tasks defined.
 
@@ -183,8 +183,9 @@ You can keep checking the status periodically to see that the workflow is making
  
 
 **Exercise 6:** `cd` to the output directory and look at the outputs. Which is the most common word used in the 6 books? Hint:
-	$ cd ~/data/outputs/
-	$ head -n 3 *.out
+
+	$ cd /local-scratch/$USER/workflows/outputs/[wfid]
+	$ head -n 5 *.out
  
 
 **Exercise 7:** Want to try something larger? Copy the additional 994 ebooks from the many-more-inputs/ directory to the inputs/ directory:
@@ -204,7 +205,29 @@ This informs Pegasus that it is ok to cluster up to 50 of the wordfreq tasks in 
 	$ ./submit
 
 Use `pegasus-status` and `pegasus-statistics` to monitor your workflow. Using `pegasus-statistics`, determine how many jobs ended up in your workflow.
- 
+
+
+## Containers and Job Dependencies
+
+A more complex workflow can be foind in the `wordfreq-containers/` directory. This example is based on the first wordfreq example, but highlights two features: the ability to run in custom containers, and job dependencies. The container capability is provided by OSG ([Docker and Singularity Containers](https://support.opensciencegrid.org/support/solutions/articles/12000024676-docker-and-singularity-containers)) and is configured in the `sites.xml.template` file. Note the updated `Requirements` and `+SingularityImages` in the condorpool entry:
+
+        <!-- this is our execution site -->
+        <site  handle="condorpool" arch="x86_64" os="LINUX">
+            <profile namespace="pegasus" key="style" >condor</profile>
+            <profile namespace="condor" key="universe" >vanilla</profile>
+            <profile namespace="condor" key="requirements" >HAS_SINGULARITY == True</profile>
+            <profile namespace="condor" key="request_cpus" >1</profile>
+            <profile namespace="condor" key="request_memory" >1 GB</profile>
+            <profile namespace="condor" key="request_disk" >1 GB</profile>
+            <profile namespace="condor" key="+SingularityImage" >"/cvmfs/singularity.opensciencegrid.org/pegasus/osg-el7:latest"</profile>
+        </site>
+
+If you want to use stashcp, make sure it is accessible in the image. A symlink to `/cvmfs/` from a standard location in the PATH is often enough for the tool to be found and used ([example Dockerfile](https://github.com/pegasus-isi/osg-container-images/blob/master/osg-el7/Dockerfile))
+
+The added job dependency in this example is similar to exercise 6 above. We want a job at the end to summarize all the findings from the wordfreq job:
+
+![fig 1](https://raw.githubusercontent.com/OSGConnect/tutorial-pegasus/master/dax.png)
+
 
 ## Getting Help
 
