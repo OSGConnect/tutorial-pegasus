@@ -209,7 +209,11 @@ Use `pegasus-status` and `pegasus-statistics` to monitor your workflow. Using `p
 
 ## Containers and Job Dependencies
 
-A more complex workflow can be foind in the `wordfreq-containers/` directory. This example is based on the first wordfreq example, but highlights two features: the ability to run in custom containers, and job dependencies. The container capability is provided by OSG ([Docker and Singularity Containers](https://support.opensciencegrid.org/support/solutions/articles/12000024676-docker-and-singularity-containers)) and is configured in the `sites.xml.template` file. Note the updated `Requirements` and `+SingularityImages` in the condorpool entry:
+A more complex workflow can be foind in the `wordfreq-containers/` directory.
+
+    $ cd ../wordfreq-containers/
+
+This example is based on the first wordfreq example, but highlights two features: the ability to run in custom containers, and job dependencies. The container capability is provided by OSG ([Docker and Singularity Containers](https://support.opensciencegrid.org/support/solutions/articles/12000024676-docker-and-singularity-containers)) and is configured in the `sites.xml.template` file. Note the updated `Requirements` and `+SingularityImages` in the condorpool entry:
 
         <!-- this is our execution site -->
         <site  handle="condorpool" arch="x86_64" os="LINUX">
@@ -224,9 +228,15 @@ A more complex workflow can be foind in the `wordfreq-containers/` directory. Th
 
 If you want to use stashcp, make sure it is accessible in the image. A symlink to `/cvmfs/` from a standard location in the PATH is often enough for the tool to be found and used ([example Dockerfile](https://github.com/pegasus-isi/osg-container-images/blob/master/osg-el7/Dockerfile))
 
-The added job dependency in this example is similar to exercise 6 above. We want a job at the end to summarize all the findings from the wordfreq job:
+The added job dependency in this example is similar to exercise 6 above. We want a job at the end to summarize all the findings from the wordfreq job, with a workflow structure looking like:
 
 ![fig 1](https://raw.githubusercontent.com/OSGConnect/tutorial-pegasus/master/dax.png)
+
+These job dependencies are described using the `depends()` method in the DAX API. For example:
+
+        dax.depends(parent=wordfreq_job, child=summarize_job)
+
+**Exercise 8:** Open up the `dax-generator.py` file (remember, you should have changed directory to `wordfreq-containers/` by now), and explore where the new job `summarize` was added. Could the definition of the job be added to after the loop? If so, consider what lists or other data structures you would have to add in order to remember the jobs and output files from inside the loop to where you would need them in the `summarize` job definition.
 
 
 ## Getting Help
