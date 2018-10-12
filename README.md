@@ -148,13 +148,13 @@ In the tarball there is also a `submit` script. This is a convenience script wri
 
 Note that when Pegasus plans/submits a workflow, a work directory is created and presented in the output. This directory is the handle to the workflow instance and used by Pegasus command line tools. Some useful tools to know about:
 
-   * `_pegasus-status -v [wfdir]_`
+   * `pegasus-status -v [wfdir]`
         Provides status on a currently running workflow. ([more](https://pegasus.isi.edu/documentation/cli-pegasus-status.php))
-   * `_pegasus-analyzer [wfdir]_`
+   * `pegasus-analyzer [wfdir]`
         Provides debugging clues why a workflow failed. Run this after a workflow has failed. ([more](https://pegasus.isi.edu/documentation/cli-pegasus-analyzer.php))
-   * `_pegasus-statistics [wfdir]_`
+   * `pegasus-statistics [wfdir]`
         Provides statistics, such as walltimes, on a workflow after it has completed. ([more](https://pegasus.isi.edu/documentation/cli-pegasus-statistics.php))
-   * `_pegasus-remove [wfdir]_`
+   * `pegasus-remove [wfdir]`
         Removes a workflow from the system. ([more](https://pegasus.isi.edu/documentation/cli-pegasus-remove.php))
 
 During the workflow planning, Pegasus transforms the workflow to make it work well in the target execution environment. Our DAX had 6 independent tasks defined.
