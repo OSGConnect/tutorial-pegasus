@@ -4,9 +4,6 @@ set -e
 
 TOPDIR=`pwd`
 
-# use the latest Pegasus development version
-export PATH=/cvmfs/oasis.opensciencegrid.org/osg/projects/pegasus/rhel7/4.9.0dev/bin:$PATH
-
 # stashcache is used for data transfers
 module load stashcache
 
