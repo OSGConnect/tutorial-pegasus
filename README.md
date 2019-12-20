@@ -241,5 +241,5 @@ These job dependencies are described using the `depends()` method in the DAX API
 
 ## Getting Help
 
-For assistance or questions, please email the OSG User Support team  at [user-support@opensciencegrid.org](mailto:user-support@opensciencegrid.org) or visit the [help desk and community forums](https://support.opensciencegrid.org).
+For assistance or questions, please email the OSG User Support team  at [support@opensciencegrid.org](mailto:support@opensciencegrid.org) or visit the [help desk and community forums](https://support.opensciencegrid.org).
 
