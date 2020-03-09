@@ -1,4 +1,4 @@
-[title]: - "Pegasus"
+[title]: - "Use Pegasus to Manage Workflows on OSG Connect"
 [TOC]
 
 
