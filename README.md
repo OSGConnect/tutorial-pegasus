@@ -119,7 +119,7 @@ In the tarball there is also a `submit` script. This is a convenience script wri
     module load stashcache
     
     # a good working directory
-    export WORK_DIR=/local-scratch/$USER/workflows
+    export WORK_DIR=$HOME/workflows
     mkdir -p $WORK_DIR
     
     # generate the dax
@@ -184,7 +184,7 @@ You can keep checking the status periodically to see that the workflow is making
 
 **Exercise 6:** `cd` to the output directory and look at the outputs. Which is the most common word used in the 6 books? Hint:
 
-	$ cd /local-scratch/$USER/workflows/outputs/[wfid]
+	$ cd $HOME/workflows/outputs/[wfid]
 	$ head -n 5 *.out
  
 

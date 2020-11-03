@@ -8,7 +8,7 @@ TOPDIR=`pwd`
 module load stashcache
 
 # a good working directory
-export WORK_DIR=/local-scratch/$USER/workflows
+export WORK_DIR=$HOME/workflows
 mkdir -p $WORK_DIR
 
 # generate the dax
