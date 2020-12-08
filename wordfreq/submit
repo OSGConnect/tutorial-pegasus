@@ -2,31 +2,11 @@
 
 set -e
 
-TOPDIR=`pwd`
-
 # stashcache is used for data transfers
 module load stashcache
 
-# a good working directory
-export WORK_DIR=$HOME/workflows
-mkdir -p $WORK_DIR
-
-# generate the dax
+# generate and run the workflow
 export PYTHONPATH=`pegasus-config --python`
-./dax-generator.py
+./workflow.py
 
-# create the site catalog from the template
-envsubst < "sites.xml.template" > "sites.xml"
-
-# plan and submit the  workflow
-pegasus-plan \
-    --conf pegasus.conf \
-    --dir $WORK_DIR/runs \
-    --relative-dir `date +'%s'` \
-    --sites condorpool \
-    --staging-site stash \
-    --output-site local \
-    --dax dax.xml \
-    --cluster horizontal \
-    --submit
 
