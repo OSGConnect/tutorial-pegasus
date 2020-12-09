@@ -44,7 +44,7 @@ local_shared_scratch = Directory(directory_type=Directory.SHARED_SCRATCH, path=W
 local_shared_scratch.add_file_servers(FileServer(url="file://" + str(WORK_DIR / "scratch"), operation_type=Operation.ALL))
 local_site.add_directories(local_shared_scratch)
 
-local_storage = Directory(directory_type=Directory.LOCAL_STORAGE, path=WORK / "outputs")
+local_storage = Directory(directory_type=Directory.LOCAL_STORAGE, path=WORK_DIR / "outputs")
 local_storage.add_file_servers(FileServer(url="file://" + str(WORK_DIR / "outputs"), operation_type=Operation.ALL))
 local_site.add_directories(local_storage)
 
@@ -57,9 +57,10 @@ stash_staging_path = "/public/{USER}/staging".format(USER=getpass.getuser())
 stash_shared_scratch = Directory(directory_type=Directory.SHARED_SCRATCH, path=stash_staging_path)
 stash_shared_scratch.add_file_servers(
     FileServer(
-        url="stash://osgconnect{STASH_STAGING_PATH}".format(STASH_STAGING_PATH=stash_site), 
+        url="stash:///osgconnect{STASH_STAGING_PATH}".format(STASH_STAGING_PATH=stash_staging_path), 
         operation_type=Operation.ALL)
 )
+stash_site.add_directories(stash_shared_scratch)
 sc.add_sites(stash_site)
 
 # condorpool (execution site)
@@ -98,7 +99,7 @@ input_files = [File(f.name) for f in (TOP_DIR / "inputs").iterdir() if f.name.en
 
 rc = ReplicaCatalog()
 for f in input_files:
-    rc.add_replica(site="local", lfn=f, pfn=TOP_DIR / "inputs" / f.name)
+    rc.add_replica(site="local", lfn=f, pfn=TOP_DIR / "inputs" / f.lfn)
 
 # write ReplicaCatalog to replicas.yml
 rc.write()
@@ -107,7 +108,7 @@ rc.write()
 wf = Workflow(name="wordfreq-workflow")
 
 for f in input_files:
-    out_file = File(f.name + ".out")
+    out_file = File(f.lfn + ".out")
     wordfreq_job = Job(wordfreq)\
                     .add_args(f, out_file)\
                     .add_inputs(f)\
@@ -121,6 +122,6 @@ wf.plan(
     sites=["condorpool"],
     staging_sites={"condorpool": "stash"},
     output_sites=["local"],
-    cluster="horizontal",
+    cluster=["horizontal"],
     submit=True
 )
