@@ -17,14 +17,12 @@ TOP_DIR = Path(__file__).resolve().parent
 
 # --- Properties ---------------------------------------------------------------
 props = Properties()
-props["pegasus.dir.storage.mapper"] = "Flat"
-props["pegasus.dir.storage.deep"] = "True"
-props["pegasus.condor.logs.symlink"] = "false"
 props["pegasus.data.configuration"] = "nonsharedfs"
 
 # Provide a full kickstart record, including the environment, even for successful jobs
 props["pegasus.gridstart.arguments"] = "-f"
 
+#Limit the number of idle jobs for large workflows
 props["dagman.maxidle"] = "1000"
 
 # Help Pegasus developers by sharing performance data (optional)
@@ -57,9 +55,10 @@ stash_staging_path = "/public/{USER}/staging".format(USER=getpass.getuser())
 stash_shared_scratch = Directory(directory_type=Directory.SHARED_SCRATCH, path=stash_staging_path)
 stash_shared_scratch.add_file_servers(
     FileServer(
-        url="stash://osgconnect{STASH_STAGING_PATH}".format(STASH_STAGING_PATH=stash_site), 
+        url="stash:///osgconnect{STASH_STAGING_PATH}".format(STASH_STAGING_PATH=stash_staging_path), 
         operation_type=Operation.ALL)
 )
+stash_site.add_directories(stash_shared_scratch)
 sc.add_sites(stash_site)
 
 # condorpool (execution site)
@@ -72,7 +71,12 @@ condorpool_site.add_condor_profile(
     request_memory="1 GB",
     request_disk="1 GB",
 )
-condorpool_site.add_profiles(Namespace.CONDOR, key="+SingularityImage", value='"/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-el7:latest"')
+condorpool_site.add_profiles(
+    Namespace.CONDOR, 
+    key="+SingularityImage", 
+    value='"/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-el7:latest"'
+)
+
 sc.add_sites(condorpool_site)
 
 # write SiteCatalog to ./sites.yml
@@ -90,13 +94,13 @@ wordfreq = Transformation(
 summarize = Transformation(
                 name="summarize",
                 site="local",
-                pfn=TOP_DIR / "summarize"
+                pfn=TOP_DIR / "summarize",
                 is_stageable=True,
                 arch=Arch.X86_64
             )
 
 tc = TransformationCatalog()
-tc.add_transformations(wordfreq)
+tc.add_transformations(wordfreq, summarize)
 
 # write TransformationCatalog to ./transformations.yml
 tc.write()
@@ -134,6 +138,6 @@ wf.plan(
     sites=["condorpool"],
     staging_sites={"condorpool": "stash"},
     output_sites=["local"],
-    cluster="horizontal",
+    cluster=["horizontal"],
     submit=True
 )

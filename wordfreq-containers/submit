@@ -2,9 +2,6 @@
 
 set -e
 
-# stashcache is used for data transfers
-module load stashcache
-
 # generate and run the workflow
 export PYTHONPATH=`pegasus-config --python`
-./workflow.py
+python3 workflow.py
