@@ -86,7 +86,7 @@ sc.write()
 wordfreq = Transformation(
             name="wordfreq",
             site="local",
-            pfn=TOP_DIR / "wordfreq",
+            pfn=TOP_DIR / "bin/wordfreq",
             is_stageable=True,
             arch=Arch.X86_64
         ).add_pegasus_profile(clusters_size=1)
@@ -94,7 +94,7 @@ wordfreq = Transformation(
 summarize = Transformation(
                 name="summarize",
                 site="local",
-                pfn=TOP_DIR / "summarize",
+                pfn=TOP_DIR / "bin/summarize",
                 is_stageable=True,
                 arch=Arch.X86_64
             )
