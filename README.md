@@ -334,7 +334,7 @@ is done, display statistics with `pegasus-statistics`:
 **Exercise 6:** `cd` to the output directory and look at the outputs. Which is
 the most common word used in the 6 books? Hint:
 
-	$ cd $HOME/workflows/outputs/[wfid]
+	$ cd $HOME/workflows/outputs
 	$ head -n 5 *.out
 
 **Exercise 7:** Want to try something larger? Copy the additional 994 ebooks from \
