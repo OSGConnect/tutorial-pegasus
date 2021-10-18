@@ -170,17 +170,17 @@ When invoked, the workflow script (`workflow.py`) does the following:
          sc.write()
 
 
-    	In order for the workflow to use the container capability provided by OSG,
-    	([Docker and Singularity Containers](https://support.opensciencegrid.org/support/solutions/articles/12000024676-docker-and-singularity-containers))
-    	the following HTCondor profiles must be
-    	added to the condorpool execution site: `requirements="HAS_SINGULARITY == True"`,
-    	and `+SingularityImage='"/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-el7:latest"'`.
-    	The `requirements` expression indicates that the host on which the jobs run
-    	must have Singularity installed. `+SingularityImage` specifies the container to use.
+In order for the workflow to use the container capability provided by OSG,
+([Docker and Singularity Containers](https://support.opensciencegrid.org/support/solutions/articles/12000024676-docker-and-singularity-containers))
+the following HTCondor profiles must be
+added to the condorpool execution site: `requirements="HAS_SINGULARITY == True"`,
+and `+SingularityImage='"/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-el7:latest"'`.
+The `requirements` expression indicates that the host on which the jobs run
+must have Singularity installed. `+SingularityImage` specifies the container to use.
 
-    	If you want to use stashcp, make sure it is accessible in the image. A symlink
-    	to `/cvmfs/` from a standard location in the PATH is often enough for the
-    	tool to be found and used ([example Dockerfile](https://github.com/pegasus-isi/osg-container-images/blob/master/osg-el7/Dockerfile)).
+If you want to use stashcp, make sure it is accessible in the image. A symlink
+to `/cvmfs/` from a standard location in the PATH is often enough for the
+tool to be found and used ([example Dockerfile](https://github.com/pegasus-isi/osg-container-images/blob/master/osg-el7/Dockerfile)).
 
   3. Writes the file `transformations.yml`. This file specifies the executables used
      in the workflow and contains the locations where they are physically located.
