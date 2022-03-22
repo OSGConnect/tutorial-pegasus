@@ -6,7 +6,7 @@
 
 [The Pegasus project](https://pegasus.isi.edu) encompasses a set of technologies that help workflow-based applications execute in a number of different environments including desktops, campus clusters, grids, and clouds. Pegasus bridges the scientific domain and the execution environment by automatically mapping high-level workflow descriptions onto distributed resources. It automatically locates the necessary input data and computational resources necessary for workflow execution. Pegasus enables scientists to construct workflows in abstract terms without worrying about the details of the underlying execution environment or the particulars of the low-level specifications required by the middleware. Some of the advantages of using Pegasus include:
 
-   * **Portability / Reuse** - User created workflows can easily be run in different environments without alteration. Pegasus currently runs workflows on top of Condor, Grid infrastrucutures such as Open Science Grid and XSEDE, Amazon EC2, Google Cloud, and many campus clusters. The same workflow can run on a single system or across a heterogeneous set of resources.
+   * **Portability / Reuse** - User created workflows can easily be run in different environments without alteration. Pegasus currently runs workflows on compute systems scheduled via HTCondor, including the OSPool, and other other systems or via other schedulers (e.g. XSEDE resources, Amazon EC2, Google Cloud, and many campus clusters). The same workflow can run on a single system or across a heterogeneous set of resources.
 
    * **Performance** - The Pegasus mapper can reorder, group, and prioritize tasks in order to increase the overall workflow performance.
 
