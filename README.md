@@ -1,6 +1,9 @@
-[title]: - "Use Pegasus to Manage Workflows on OSG Connect"
-[TOC]
+---
+ospool:
+    path: htc_workloads/automated_workflows/tutorial-pegasus/README.md
+---
 
+# Use Pegasus to Manage Workflows on OSG Connect
 
 ## Introduction
 
