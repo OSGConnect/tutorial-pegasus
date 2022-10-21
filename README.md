@@ -3,7 +3,7 @@ ospool:
     path: htc_workloads/automated_workflows/tutorial-pegasus/README.md
 ---
 
-# Use Pegasus to Manage Workflows on OSG Connect
+# Pegasus Workflows
 
 ## Introduction
 
@@ -58,7 +58,7 @@ workflow has to do is use the `stashcp` command to copy data to and from the OSG
 Connect Stash instance.
 
 Additionally, this example uses a custom container to run jobs. The container
-capability is provided by OSG ([Docker and Singularity Containers](https://support.opensciencegrid.org/support/solutions/articles/12000024676-docker-and-singularity-containers)) and
+capability is provided by OSG ([Containers - Overivew](https://portal.osg-htc.org/documentation/htc_workloads/using_software/containers/)) and
 is used by setting HTCondor properties when defining your workflow.  
 
 **Exercise 1**: create a copy of the Pegasus tutorial and change the working
@@ -173,8 +173,8 @@ When invoked, the workflow script (`workflow.py`) does the following:
          sc.write()
 
 
-In order for the workflow to use the container capability provided by OSG,
-([Docker and Singularity Containers](https://support.opensciencegrid.org/support/solutions/articles/12000024676-docker-and-singularity-containers))
+In order for the workflow to use the container capability provided by OSG
+([Containers - Overivew](https://portal.osg-htc.org/documentation/htc_workloads/using_software/containers/)),
 the following HTCondor profiles must be
 added to the condorpool execution site: `requirements="HAS_SINGULARITY == True"`,
 and `+SingularityImage='"/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-el7:latest"'`.
@@ -374,4 +374,4 @@ how this compares with our initial workflow run.
 ## Getting Help
 
 For assistance or questions, please email the OSG User Support team  at
-[support@opensciencegrid.org](mailto:support@opensciencegrid.org) or visit the [help desk and community forums](https://support.opensciencegrid.org).
+[support@osg-htc.org](mailto:support@osg-htc.org) or visit the [user documentation](https://portal.osg-htc.org/documentation/).
