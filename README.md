@@ -49,13 +49,11 @@ For details, please refer to the [Pegasus documentation](https://pegasus.isi.edu
 `wordfreq` is an example application and workflow that can be used to introduce
 Pegasus tools and concepts.
 
-The application is available on the OSG Connect
-login host.
+The application is available on the OSG Access Points.
 
 This example is using [OSG StashCache](https://derekweitzel.com/2018/09/26/stashcache-by-the-numbers/)
 for data transfers. Credentials are transparant to the end users, so all the
-workflow has to do is use the `stashcp` command to copy data to and from the OSG
-Connect Stash instance.
+workflow has to do is use the `stashcp` command to copy data to and from the OSG Stash instance.
 
 Additionally, this example uses a custom container to run jobs. The container
 capability is provided by OSG ([Containers - Overivew](https://portal.osg-htc.org/documentation/htc_workloads/using_software/containers/)) and
@@ -64,7 +62,7 @@ is used by setting HTCondor properties when defining your workflow.
 **Exercise 1**: create a copy of the Pegasus tutorial and change the working
 directory to the wordfreq workflow by running the following commands:
 
-	$ tutorial pegasus
+	$ git clone https://github.com/OSGConnect/tutorial-pegasus
 	$ cd tutorial-pegasus/wordfreq
 
 In the `wordfreq` directory, you will find:
