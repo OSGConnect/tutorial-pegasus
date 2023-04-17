@@ -52,7 +52,8 @@ sc.add_sites(local_site)
 # osdf site (staging site, where intermediate data will be stored)
 osdf_site = Site(name="osdf", arch=Arch.X86_64, os_type=OS.LINUX)
 # uw.osg-htc.org APs and osgconnect.org APs have differnet configs
-if True:
+if os.path.exists("/mnt/stash/ospool"):
+    # uw.osg-htc.org
     osdf_staging_path = "/mnt/stash/ospool/PROTECTED/{USER}/staging".format(USER=getpass.getuser())
     osdf_shared_scratch = Directory(directory_type=Directory.SHARED_SCRATCH, path=osdf_staging_path)
     osdf_shared_scratch.add_file_servers(
@@ -62,7 +63,7 @@ if True:
     )
     osdf_site.add_directories(osdf_shared_scratch)
 else:
-    osdf_site = Site(name="osdf", arch=Arch.X86_64, os_type=OS.LINUX)
+    # OSG Connect
     osdf_staging_path = "/public/{USER}/staging".format(USER=getpass.getuser())
     osdf_shared_scratch = Directory(directory_type=Directory.SHARED_SCRATCH, path=osdf_staging_path)
     osdf_shared_scratch.add_file_servers(
