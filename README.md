@@ -137,18 +137,31 @@ When invoked, the workflow script (`workflow.py`) does the following:
          local_site.add_env(PATH=os.environ["PATH"])
          sc.add_sites(local_site)
 
-         # stash site (staging site, where intermediate data will be stored)
-         stash_site = Site(name="stash", arch=Arch.X86_64, os_type=OS.LINUX)
-         stash_staging_path = "/public/{USER}/staging".format(USER=getpass.getuser())
-         stash_shared_scratch = Directory(directory_type=Directory.SHARED_SCRATCH, path=stash_staging_path)
-         stash_shared_scratch.add_file_servers(
-             FileServer(
-                 url="stash:///osgconnect{STASH_STAGING_PATH}".format(STASH_STAGING_PATH=stash_staging_path),
-                 operation_type=Operation.ALL)
-         )
-         stash_site.add_directories(stash_shared_scratch)
-         sc.add_sites(stash_site)
-
+         # osdf site (staging site, where intermediate data will be stored)
+         osdf_site = Site(name="osdf", arch=Arch.X86_64, os_type=OS.LINUX)
+         # uw.osg-htc.org APs and osgconnect.org APs have differnet configs
+         if os.path.exists("/mnt/stash/ospool"):
+             # uw.osg-htc.org
+             osdf_staging_path = "/mnt/stash/ospool/PROTECTED/{USER}/staging".format(USER=getpass.getuser())
+             osdf_shared_scratch = Directory(directory_type=Directory.SHARED_SCRATCH, path=osdf_staging_path)
+             osdf_shared_scratch.add_file_servers(
+                 FileServer(
+                     url="stash:///ospool/PROTECTED/{USER}/staging".format(USER=getpass.getuser()),
+                     operation_type=Operation.ALL)
+             )
+             osdf_site.add_directories(osdf_shared_scratch)
+         else:
+             # OSG Connect
+             osdf_staging_path = "/public/{USER}/staging".format(USER=getpass.getuser())
+             osdf_shared_scratch = Directory(directory_type=Directory.SHARED_SCRATCH, path=osdf_staging_path)
+             osdf_shared_scratch.add_file_servers(
+                 FileServer(
+                     url="osdf:///osgconnect{STASH_STAGING_PATH}".format(STASH_STAGING_PATH=osdf_staging_path),
+                     operation_type=Operation.ALL)
+             )
+             osdf_site.add_directories(osdf_shared_scratch)
+         sc.add_sites(osdf_site)
+         
          # condorpool (execution site)
          condorpool_site = Site(name="condorpool", arch=Arch.X86_64, os_type=OS.LINUX)
          condorpool_site.add_pegasus_profile(style="condor")
