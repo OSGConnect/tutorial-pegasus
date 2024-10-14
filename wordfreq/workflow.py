@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import logging
 import os
 import getpass
@@ -6,151 +7,171 @@ from pathlib import Path
 
 from Pegasus.api import *
 
-logging.basicConfig(level=logging.INFO)
 
-# --- Working Directory Setup --------------------------------------------------
-# A good working directory for workflow runs and output files
-WORK_DIR = Path.home() / "workflows"
-WORK_DIR.mkdir(exist_ok=True)
+class WordfreqWorkflow:
 
-TOP_DIR = Path(__file__).resolve().parent
+    TOP_DIR = Path(__file__).parent.resolve()
+    WORK_DIR = Path.home() / "workflows"
 
-# --- Properties ---------------------------------------------------------------
-props = Properties()
-props["pegasus.data.configuration"] = "nonsharedfs"
 
-# Provide a full kickstart record, including the environment, even for successful jobs
-props["pegasus.gridstart.arguments"] = "-f"
+    def __init__(self):
+        """."""
+        self.runs_dir = self.WORK_DIR / "runs"
+        self.scratch_dir = self.WORK_DIR / "scratch"
+        self.output_dir = self.WORK_DIR / "outputs"
 
-#Limit the number of idle jobs for large workflows
-props["dagman.maxidle"] = "1000"
+        self.props = Properties()
 
-# Help Pegasus developers by sharing performance data (optional)
-props["pegasus.monitord.encoding"] = "json"
-props["pegasus.catalog.workflow.amqp.url"] = "amqp://friend:donatedata@msgs.pegasus.isi.edu:5672/prod/workflows"
+        self.wf = Workflow("wordfreq")
+        self.tc = TransformationCatalog()
+        self.sc = SiteCatalog()
+        self.rc = ReplicaCatalog()
 
-# write properties file to ./pegasus.properties
-props.write()
+        self.wf.add_transformation_catalog(self.tc)
+        self.wf.add_site_catalog(self.sc)
+        self.wf.add_replica_catalog(self.rc)
 
-# --- Sites --------------------------------------------------------------------
-sc = SiteCatalog()
 
-# local site (submit machine)
-local_site = Site(name="local", arch=Arch.X86_64)
+    def generate_props(self):
+        # simple condor-io file stageing
+        self.props["pegasus.data.configuration"] = "condorio"
 
-local_shared_scratch = Directory(directory_type=Directory.SHARED_SCRATCH, path=WORK_DIR / "scratch")
-local_shared_scratch.add_file_servers(FileServer(url="file://" + str(WORK_DIR / "scratch"), operation_type=Operation.ALL))
-local_site.add_directories(local_shared_scratch)
+        # Provide a full kickstart record, including the environment, even for successful jobs
+        self.props["pegasus.gridstart.arguments"] = "-f"
 
-local_storage = Directory(directory_type=Directory.LOCAL_STORAGE, path=WORK_DIR / "outputs")
-local_storage.add_file_servers(FileServer(url="file://" + str(WORK_DIR / "outputs"), operation_type=Operation.ALL))
-local_site.add_directories(local_storage)
+        # Limit the number of idle jobs for large workflows
+        self.props["dagman.maxidle"] = "1000"
 
-local_site.add_env(PATH=os.environ["PATH"])
-sc.add_sites(local_site)
+        # Help Pegasus developers by sharing performance data (optional)
+        self.props["pegasus.monitord.encoding"] = "json"
+        self.props["pegasus.catalog.workflow.amqp.url"] = "amqp://friend:donatedata@msgs.pegasus.isi.edu:5672/prod/workflows"
 
-# osdf site (staging site, where intermediate data will be stored)
-osdf_site = Site(name="osdf", arch=Arch.X86_64, os_type=OS.LINUX)
-# uw.osg-htc.org APs and osgconnect.org APs have differnet configs
-if os.path.exists("/mnt/stash/ospool"):
-    # uw.osg-htc.org
-    osdf_staging_path = "/mnt/stash/ospool/PROTECTED/{USER}/staging".format(USER=getpass.getuser())
-    osdf_shared_scratch = Directory(directory_type=Directory.SHARED_SCRATCH, path=osdf_staging_path)
-    osdf_shared_scratch.add_file_servers(
-        FileServer(
-            url="stash:///ospool/PROTECTED/{USER}/staging".format(USER=getpass.getuser()), 
-            operation_type=Operation.ALL)
-    )
-    osdf_site.add_directories(osdf_shared_scratch)
-else:
-    # OSG Connect
-    osdf_staging_path = "/public/{USER}/staging".format(USER=getpass.getuser())
-    osdf_shared_scratch = Directory(directory_type=Directory.SHARED_SCRATCH, path=osdf_staging_path)
-    osdf_shared_scratch.add_file_servers(
-        FileServer(
-            url="osdf:///osgconnect{STASH_STAGING_PATH}".format(STASH_STAGING_PATH=osdf_staging_path), 
-            operation_type=Operation.ALL)
-    )
-    osdf_site.add_directories(osdf_shared_scratch)
-sc.add_sites(osdf_site)
+        # nicer looking submit dirs
+        self.props["pegasus.dir.useTimestamp"] = "true"
 
-# condorpool (execution site)
-condorpool_site = Site(name="condorpool", arch=Arch.X86_64, os_type=OS.LINUX)
-condorpool_site.add_pegasus_profile(style="condor")
-condorpool_site.add_condor_profile(
-    universe="vanilla",
-    requirements="HAS_SINGULARITY == True",
-    request_cpus=1,
-    request_memory="1 GB",
-    request_disk="1 GB",
-)
-condorpool_site.add_profiles(
-    Namespace.CONDOR, 
-    key="+SingularityImage", 
-    value='"/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-el7:latest"'
-)
+        self.props.write()
 
-sc.add_sites(condorpool_site)
 
-# write SiteCatalog to ./sites.yml
-sc.write()
+    def generate_site_catalog(self):
 
-# --- Transformations ----------------------------------------------------------
-wordfreq = Transformation(
-            name="wordfreq",
-            site="local",
-            pfn=TOP_DIR / "bin/wordfreq",
-            is_stageable=True,
-            arch=Arch.X86_64
-        ).add_pegasus_profile(clusters_size=1)
+        username = getpass.getuser()
 
-summarize = Transformation(
-                name="summarize",
-                site="local",
-                pfn=TOP_DIR / "bin/summarize",
-                is_stageable=True,
-                arch=Arch.X86_64
+        local = (
+            Site("local")
+            .add_directories(
+                Directory(
+                    Directory.SHARED_STORAGE, self.output_dir
+                ).add_file_servers(
+                    FileServer(f"file://{self.output_dir}", Operation.ALL)
+                )
             )
+            .add_directories(
+                Directory(
+                    Directory.SHARED_SCRATCH, self.scratch_dir
+                ).add_file_servers(
+                    FileServer(f"file://{self.scratch_dir}", Operation.ALL)
+                )
+            )
+        )
 
-tc = TransformationCatalog()
-tc.add_transformations(wordfreq, summarize)
+        condorpool = (
+            Site("condorpool")
+            .add_pegasus_profile(style="condor")
+            .add_condor_profile(
+                universe="vanilla",
+                requirements="HAS_SINGULARITY == True",
+                request_cpus=1,
+                request_memory="1 GB",
+                request_disk="1 GB",
+             )
+            .add_profiles(
+                Namespace.CONDOR, 
+                key="+SingularityImage", 
+                value='"/cvmfs/singularity.opensciencegrid.org/htc/rocky:9"'
+            )
+        )
 
-# write TransformationCatalog to ./transformations.yml
-tc.write()
+        self.sc.add_sites(local, condorpool)
 
-# --- Replicas -----------------------------------------------------------------
-input_files = [File(f.name) for f in (TOP_DIR / "inputs").iterdir() if f.name.endswith(".txt")]
 
-rc = ReplicaCatalog()
-for f in input_files:
-    rc.add_replica(site="local", lfn=f, pfn=TOP_DIR / "inputs" / f.lfn)
+    def generate_transformation_catalog(self):
 
-# write ReplicaCatalog to replicas.yml
-rc.write()
+        wordfreq = Transformation(
+                    name="wordfreq",
+                    site="local",
+                    pfn=self.TOP_DIR / "bin/wordfreq",
+                    is_stageable=True
+                ).add_pegasus_profile(clusters_size=1)
+        
+        summarize = Transformation(
+                        name="summarize",
+                        site="local",
+                        pfn=self.TOP_DIR / "bin/summarize",
+                        is_stageable=True
+                    )
+        
+        self.tc.add_transformations(wordfreq, summarize)
+        
 
-# --- Workflow -----------------------------------------------------------------
-wf = Workflow(name="wordfreq-workflow")
+    def generate_replica_catalog(self):
 
-summarize_job = Job(summarize).add_outputs(File("summary.txt"))
-wf.add_jobs(summarize_job)
+        input_files = [File(f.name) for f in (self.TOP_DIR / "inputs").iterdir() if f.name.endswith(".txt")]
 
-for f in input_files:
-    out_file = File(f.lfn + ".out")
-    wordfreq_job = Job(wordfreq)\
-                    .add_args(f, out_file)\
-                    .add_inputs(f)\
-                    .add_outputs(out_file)
-    
-    wf.add_jobs(wordfreq_job)
+        for f in input_files:
+            self.rc.add_replica(site="local", lfn=f, pfn=self.TOP_DIR / "inputs" / f.lfn)
 
-    summarize_job.add_inputs(out_file)
 
-# plan and run the workflow
-wf.plan(
-    dir=WORK_DIR / "runs",
-    sites=["condorpool"],
-    staging_sites={"condorpool": "osdf"},
-    output_sites=["local"],
-    cluster=["horizontal"],
-    submit=True
-)
+    def generate_workflow(self):
+
+        # last job, child of all others
+        summarize_job = (
+            Job("summarize")
+            .add_outputs(File("summary.txt"))
+        )
+        self.wf.add_jobs(summarize_job)
+        
+        input_files = [File(f.name) for f in (self.TOP_DIR / "inputs").iterdir() if f.name.endswith(".txt")]
+
+        for f in input_files:
+            out_file = File(f.lfn + ".out")
+            wordfreq_job = (
+                Job("wordfreq")
+                .add_args(f, out_file)
+                .add_inputs(f)
+                .add_outputs(out_file)
+            )
+            
+            self.wf.add_jobs(wordfreq_job)
+
+            # establish the relationship between the jobs
+            summarize_job.add_inputs(out_file)
+
+
+    def plan_workflow(self):
+        try:
+            self.wf.plan(
+                dir=self.runs_dir,
+                sites=["condorpool"],
+                output_sites=["local"],
+                cluster=["horizontal"]
+            )
+        except PegasusClientError as e:
+            print(e.output)
+
+
+    def __call__(self):
+        self.generate_props()
+        self.generate_transformation_catalog()
+        self.generate_site_catalog()
+        self.generate_replica_catalog()
+        self.generate_workflow()
+        self.plan_workflow()
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    wf = WordfreqWorkflow()
+    wf()
+
+
+

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+
+SRA_ID=$1
+
+sam="${SRA_ID}.aligned.sam"
+bam="${SRA_ID}.aligned.bam"
+sorted_bam="${SRA_ID}.aligned.sorted.bam"
+
+echo "Converting $sam to bam format $bam"
+samtools view -S -b $sam > $bam
+
+echo "Sorting $bam file to $sorted_bam"
+samtools sort -o $sorted_bam $bam
+
+echo "Indexing $sorted_bam file"
+samtools index $sorted_bam
+

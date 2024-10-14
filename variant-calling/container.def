@@ -1,0 +1,65 @@
+Bootstrap: docker
+From: hub.opensciencegrid.org/htc/rocky:9
+    
+%environment
+
+    PATH=/opt/sratoolkit/bin:/opt/bwa:/opt/samtools/bin:/opt/bcftools/bin:/opt/htslib/bin:$PATH
+    export PATH
+
+%post
+    BASE_DIR="/opt"
+    BWA_VERSION="0.7.18"
+    SAMTOOLS_VERSION="1.15.1"
+    BCFTOOLS_VERSION="1.20"
+    HTSLIB_VERSION="1.15.1"
+    SRATOOLKIT_VERSION="3.0.0"
+
+    mkdir -p ${BASE_DIR}/src
+
+    # sratoolkit
+    cd ${BASE_DIR}/src
+    curl -L -o sratoolkit-${SRATOOLKIT_VERSION}.tar.gz https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/${SRATOOLKIT_VERSION}/sratoolkit.${SRATOOLKIT_VERSION}-centos_linux64.tar.gz
+    tar xzf sratoolkit-${SRATOOLKIT_VERSION}.tar.gz
+    mkdir -p ${BASE_DIR}/sratoolkit
+    mv sratoolkit.${SRATOOLKIT_VERSION}-centos_linux64/* ${BASE_DIR}/sratoolkit
+
+    # bwa
+    cd ${BASE_DIR}/src
+    curl -L -o bwa-${BWA_VERSION}.tar.gz https://github.com/lh3/bwa/archive/refs/tags/v${BWA_VERSION}.tar.gz
+    tar xzf bwa-${BWA_VERSION}.tar.gz
+    cd bwa-${BWA_VERSION}
+    make
+    mkdir -p ${BASE_DIR}/bwa
+    cp bwa ${BASE_DIR}/bwa/
+
+    # samtools
+    cd ${BASE_DIR}/src
+    curl -L -o samtools-${SAMTOOLS_VERSION}.tar.bz2 https://github.com/samtools/samtools/releases/download/${SAMTOOLS_VERSION}/samtools-${SAMTOOLS_VERSION}.tar.bz2
+    tar xjf samtools-${SAMTOOLS_VERSION}.tar.bz2
+    cd samtools-${SAMTOOLS_VERSION}
+    ./configure --prefix=${BASE_DIR}/samtools --without-curses
+    make
+    make install
+
+    # bcftools
+    cd ${BASE_DIR}/src
+    curl -L -o bcftools-${BCFTOOLS_VERSION}.tar.bz2 https://github.com/samtools/bcftools/releases/download/${BCFTOOLS_VERSION}/bcftools-${BCFTOOLS_VERSION}.tar.bz2
+    tar xjf bcftools-${BCFTOOLS_VERSION}.tar.bz2
+    cd bcftools-${BCFTOOLS_VERSION}
+    ./configure --prefix=${BASE_DIR}/bcftools
+    make
+    make install
+
+    # htslib
+    cd ${BASE_DIR}/src
+    curl -L -o htslib-${HTSLIB_VERSION}.tar.bz2 https://github.com/samtools/htslib/releases/download/${HTSLIB_VERSION}/htslib-${HTSLIB_VERSION}.tar.bz2
+    tar xjf htslib-${HTSLIB_VERSION}.tar.bz2
+    cd htslib-${HTSLIB_VERSION}
+    ./configure --prefix=${BASE_DIR}/htslib
+    make
+    make install
+    
+    # clean up
+    cd /tmp
+    rm -rf ${BASE_DIR}/src
+

@@ -51,13 +51,9 @@ Pegasus tools and concepts.
 
 The application is available on the OSG Access Points.
 
-This example is using [OSG StashCache](https://derekweitzel.com/2018/09/26/stashcache-by-the-numbers/)
-for data transfers. Credentials are transparant to the end users, so all the
-workflow has to do is use the `stashcp` command to copy data to and from the OSG Stash instance.
-
-Additionally, this example uses a custom container to run jobs. The container
-capability is provided by OSG ([Containers - Overivew](https://portal.osg-htc.org/documentation/htc_workloads/using_software/containers/)) and
-is used by setting HTCondor properties when defining your workflow.  
+This example uses a custom container to run jobs. The container
+capability is provided by OSG ([Containers - Apptainer/Singularity](https://portal.osg-htc.org/documentation/htc_workloads/using_software/containers-singularity/))
+and is used by setting HTCondor properties when defining your workflow.  
 
 **Exercise 1**: create a copy of the Pegasus tutorial and change the working
 directory to the wordfreq workflow by running the following commands:
@@ -95,183 +91,125 @@ can be thought of as a template for such problems. For example, instead of using
 wordfreq on ebooks, the application could be protein folding on a set of input
 structures.
 
-When invoked, the workflow script (`workflow.py`) does the following:
+When invoked, the workflow script (`workflow.py`) does the following major steps:
 
-  1. Writes the file `pegasus.properties`. This file contains configuration settings
-     used by Pegasus and HTCondor.
-
-         # --- Properties ---------------------------------------------------------------
-         props = Properties()
-         props["pegasus.data.configuration"] = "nonsharedfs"
-
-         # Provide a full kickstart record, including the environment, even for successful jobs
-         props["pegasus.gridstart.arguments"] = "-f"
-
-         #Limit the number of idle jobs for large workflows
-         props["dagman.maxidle"] = "1000"
-
-         # Help Pegasus developers by sharing performance data (optional)
-         props["pegasus.monitord.encoding"] = "json"
-         props["pegasus.catalog.workflow.amqp.url"] = "amqp://friend:donatedata@msgs.pegasus.isi.edu:5672/prod/workflows"
-
-         # write properties file to ./pegasus.properties
-         props.write()
-
-  2. Writes the file `sites.yml`. This file describes the execution environment in
+  1. Generates a site catalog, which describes the execution environment in
      which the workflow will be run.
 
-         # --- Sites --------------------------------------------------------------------
-         sc = SiteCatalog()
-
-         # local site (submit machine)
-         local_site = Site(name="local", arch=Arch.X86_64)
-
-         local_shared_scratch = Directory(directory_type=Directory.SHARED_SCRATCH, path=WORK_DIR / "scratch")
-         local_shared_scratch.add_file_servers(FileServer(url="file://" + str(WORK_DIR / "scratch"), operation_type=Operation.ALL))
-         local_site.add_directories(local_shared_scratch)
-
-         local_storage = Directory(directory_type=Directory.LOCAL_STORAGE, path=WORK_DIR / "outputs")
-         local_storage.add_file_servers(FileServer(url="file://" + str(WORK_DIR / "outputs"), operation_type=Operation.ALL))
-         local_site.add_directories(local_storage)
-
-         local_site.add_env(PATH=os.environ["PATH"])
-         sc.add_sites(local_site)
-
-         # osdf site (staging site, where intermediate data will be stored)
-         osdf_site = Site(name="osdf", arch=Arch.X86_64, os_type=OS.LINUX)
-         # uw.osg-htc.org APs and osgconnect.org APs have differnet configs
-         if os.path.exists("/mnt/stash/ospool"):
-             # uw.osg-htc.org
-             osdf_staging_path = "/mnt/stash/ospool/PROTECTED/{USER}/staging".format(USER=getpass.getuser())
-             osdf_shared_scratch = Directory(directory_type=Directory.SHARED_SCRATCH, path=osdf_staging_path)
-             osdf_shared_scratch.add_file_servers(
-                 FileServer(
-                     url="stash:///ospool/PROTECTED/{USER}/staging".format(USER=getpass.getuser()),
-                     operation_type=Operation.ALL)
+         def generate_site_catalog(self):
+     
+             username = getpass.getuser()
+     
+             local = (
+                 Site("local")
+                 .add_directories(
+                     Directory(
+                         Directory.SHARED_STORAGE, self.output_dir
+                     ).add_file_servers(
+                         FileServer(f"file://{self.output_dir}", Operation.ALL)
+                     )
+                 )
+                 .add_directories(
+                     Directory(
+                         Directory.SHARED_SCRATCH, self.scratch_dir
+                     ).add_file_servers(
+                         FileServer(f"file://{self.scratch_dir}", Operation.ALL)
+                     )
+                 )
              )
-             osdf_site.add_directories(osdf_shared_scratch)
-         else:
-             # OSG Connect
-             osdf_staging_path = "/public/{USER}/staging".format(USER=getpass.getuser())
-             osdf_shared_scratch = Directory(directory_type=Directory.SHARED_SCRATCH, path=osdf_staging_path)
-             osdf_shared_scratch.add_file_servers(
-                 FileServer(
-                     url="osdf:///osgconnect{STASH_STAGING_PATH}".format(STASH_STAGING_PATH=osdf_staging_path),
-                     operation_type=Operation.ALL)
+ 
+             condorpool = (
+                 Site("condorpool")
+                 .add_pegasus_profile(style="condor")
+                 .add_condor_profile(
+                     universe="vanilla",
+                     requirements="HAS_SINGULARITY == True",
+                     request_cpus=1,
+                     request_memory="1 GB",
+                     request_disk="1 GB",
+                  )
+                 .add_profiles(
+                     Namespace.CONDOR,
+                     key="+SingularityImage",
+                     value='"/cvmfs/singularity.opensciencegrid.org/htc/rocky:9"'
+                 )
              )
-             osdf_site.add_directories(osdf_shared_scratch)
-         sc.add_sites(osdf_site)
-         
-         # condorpool (execution site)
-         condorpool_site = Site(name="condorpool", arch=Arch.X86_64, os_type=OS.LINUX)
-         condorpool_site.add_pegasus_profile(style="condor")
-         condorpool_site.add_condor_profile(
-             universe="vanilla",
-             requirements="HAS_SINGULARITY == True",
-             request_cpus=1,
-             request_memory="1 GB",
-             request_disk="1 GB",
-         )
-         condorpool_site.add_profiles(
-             Namespace.CONDOR,
-             key="+SingularityImage",
-             value='"/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-el7:latest"'
-         )
+     
+             self.sc.add_sites(local, condorpool)
+ 
+ 
+     In order for the workflow to use the container capability provided by OSG
+     ([Containers - Apptainer/Singularity](https://portal.osg-htc.org/documentation/htc_workloads/using_software/containers-singularity/)),
+     the following HTCondor profiles must be
+     added to the condorpool execution site: 
+     `+SingularityImage='"/cvmfs/singularity.opensciencegrid.org/htc/rocky:9"'`.
 
-         sc.add_sites(condorpool_site)
-
-         # write SiteCatalog to ./sites.yml
-         sc.write()
-
-
-In order for the workflow to use the container capability provided by OSG
-([Containers - Overivew](https://portal.osg-htc.org/documentation/htc_workloads/using_software/containers/)),
-the following HTCondor profiles must be
-added to the condorpool execution site: `requirements="HAS_SINGULARITY == True"`,
-and `+SingularityImage='"/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-el7:latest"'`.
-The `requirements` expression indicates that the host on which the jobs run
-must have Singularity installed. `+SingularityImage` specifies the container to use.
-
-If you want to use stashcp, make sure it is accessible in the image. A symlink
-to `/cvmfs/` from a standard location in the PATH is often enough for the
-tool to be found and used ([example Dockerfile](https://github.com/pegasus-isi/osg-container-images/blob/master/osg-el7/Dockerfile)).
-
-  3. Writes the file `transformations.yml`. This file specifies the executables used
+  2. Generates the transformation catalog, which specifies the executables used
      in the workflow and contains the locations where they are physically located.
      In this example, we have two entries: `wordfreq` and `summarize`.
 
-         # --- Transformations ----------------------------------------------------------
-         wordfreq = Transformation(
-                     name="wordfreq",
-                     site="local",
-                     pfn=TOP_DIR / "bin/wordfreq",
-                     is_stageable=True,
-                     arch=Arch.X86_64
-                 ).add_pegasus_profile(clusters_size=1)
-
-         summarize = Transformation(
-                         name="summarize",
+         def generate_transformation_catalog(self):
+     
+             wordfreq = Transformation(
+                         name="wordfreq",
                          site="local",
-                         pfn=TOP_DIR / "bin/summarize",
-                         is_stageable=True,
-                         arch=Arch.X86_64
-                     )
+                         pfn=self.TOP_DIR / "bin/wordfreq",
+                         is_stageable=True
+                     ).add_pegasus_profile(clusters_size=1)
+     
+             summarize = Transformation(
+                             name="summarize",
+                             site="local",
+                             pfn=self.TOP_DIR / "bin/summarize",
+                             is_stageable=True
+                         )
+     
+             self.tc.add_transformations(wordfreq, summarize)
 
-         tc = TransformationCatalog()
-         tc.add_transformations(wordfreq, summarize)
 
-         # write TransformationCatalog to ./transformations.yml
-         tc.write()
-
-
-  4. Writes the file `replicas.yml`. This file specifies the physical locations of
+  3. Generates the replica catalog, which specifies the physical locations of
      any input files used by the workflow. In this example, there is an entry for
      each file in the `inputs/` directory.
 
-         # --- Replicas -----------------------------------------------------------------
-         input_files = [File(f.name) for f in (TOP_DIR / "inputs").iterdir() if f.name.endswith(".txt")]
+         def generate_replica_catalog(self):
+     
+             input_files = [File(f.name) for f in (self.TOP_DIR / "inputs").iterdir() if f.name.endswith(".txt")]
+     
+             for f in input_files:
+                 self.rc.add_replica(site="local", lfn=f, pfn=self.TOP_DIR / "inputs" / f.lfn)
+     
 
-         rc = ReplicaCatalog()
-         for f in input_files:
-             rc.add_replica(site="local", lfn=f, pfn=TOP_DIR / "inputs" / f.lfn)
-
-         # write ReplicaCatalog to replicas.yml
-         rc.write()
-
-  5. Builds the wordfreq workflow and submits it for execution. When `wf.plan` is
-     invoked, `pegasus.properties`, `sites.yml`, `transformations.yml`, and
-    `replicas.yml` will be consumed as part of the workflow planning process. Note that
+  4. Builds the wordfreq workflow. Note that
     in this step there is no mention of data movement and job details as these are
     added by Pegasus when the workflow is planned into an executable workflow. As
     part of the planning process, additional jobs which handle scratch directory
     creation, data staging, and data cleanup are added to the workflow.
 
-          # --- Workflow -----------------------------------------------------------------
-          wf = Workflow(name="wordfreq-workflow")
+         def generate_workflow(self):
+     
+             # last job, child of all others
+             summarize_job = (
+                 Job("summarize")
+                 .add_outputs(File("summary.txt"))
+             )
+             self.wf.add_jobs(summarize_job)
+     
+             input_files = [File(f.name) for f in (self.TOP_DIR / "inputs").iterdir() if f.name.endswith(".txt")]
+     
+             for f in input_files:
+                 out_file = File(f.lfn + ".out")
+                 wordfreq_job = (
+                     Job("wordfreq")
+                     .add_args(f, out_file)
+                     .add_inputs(f)
+                     .add_outputs(out_file)
+                 )
+     
+                 self.wf.add_jobs(wordfreq_job)
+     
+                 # establish the relationship between the jobs
+                 summarize_job.add_inputs(out_file)
 
-          summarize_job = Job(summarize).add_outputs(File("summary.txt"))
-          wf.add_jobs(summarize_job)
-
-          for f in input_files:
-              out_file = File(f.lfn + ".out")
-              wordfreq_job = Job(wordfreq)\
-                              .add_args(f, out_file)\
-                              .add_inputs(f)\
-                              .add_outputs(out_file)
-
-              wf.add_jobs(wordfreq_job)
-
-              summarize_job.add_inputs(out_file)
-
-          # plan and run the workflow
-          wf.plan(
-              dir=WORK_DIR / "runs",
-              sites=["condorpool"],
-              staging_sites={"condorpool": "stash"},
-              output_sites=["local"],
-              cluster=["horizontal"],
-              submit=True
-          )
 
 **Exercise 2:** Submit the workflow by executing `workflow.py`.
 
@@ -363,13 +301,12 @@ short jobs, the overhead is obvious. If we make the jobs longer, the scheduling
 overhead becomes negligible. To enable the clustering feature, edit the
 `workflow.py` script. Find the section under `Transformations`:
 
-    wordfreq = Transformation(
-                name="wordfreq",
-                site="local",
-                pfn=TOP_DIR / "bin/wordfreq",
-                is_stageable=True,
-                arch=Arch.X86_64
-            ).add_pegasus_profile(clusters_size=1)
+        wordfreq = Transformation(
+                    name="wordfreq",
+                    site="local",
+                    pfn=self.TOP_DIR / "bin/wordfreq",
+                    is_stageable=True
+                ).add_pegasus_profile(clusters_size=1)
 
 Change `clusters_size=1` to `clusters_size=50`.
 

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+
+SRA_ID=$2
+
+# fix for vdb-config interactive issue
+# https://github.com/ncbi/sra-tools/issues/291
+if ! grep "/LIBS/GUID" ~/.ncbi/user-settings.mkfg &> /dev/null;
+   then mkdir -p ~/.ncbi && printf '/LIBS/GUID = "%s"\n' `uuidgen` > ~/.ncbi/user-settings.mkfg;
+fi
+
+# a requirement for the current sratools release
+vdb-config --restore-defaults
+
+fasterq-dump "$@"
+
+ls -lah
+

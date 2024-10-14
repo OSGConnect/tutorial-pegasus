@@ -1,0 +1,8 @@
+{
+    "REF": "ref_genome/ecoli_rel606.fasta",
+    "SRA_IDS": [
+            "SRR2584866",
+            "SRR2589044",
+            "SRR2584863"
+    ]
+}
