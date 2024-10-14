@@ -42,9 +42,9 @@ all four components may be defined in the same file.
 
 For details, please refer to the [Pegasus documentation](https://pegasus.isi.edu/documentation/).
 
-## wordfreq workflow
+## Wordfreq Workflow
 
-![fig 1](https://raw.githubusercontent.com/OSGConnect/tutorial-pegasus/master/workflow.png)
+![fig 1](https://raw.githubusercontent.com/OSGConnect/tutorial-pegasus/master/images/wordfreq.png)
 
 `wordfreq` is an example application and workflow that can be used to introduce
 Pegasus tools and concepts.
@@ -318,6 +318,12 @@ wordfreq executable. Save the file and re-run the script:
 Use `pegasus-status` and `pegasus-statistics` to monitor your workflow. Using
 `pegasus-statistics`, determine how many jobs ended up in your workflow and see
 how this compares with our initial workflow run.
+
+## Variant Calling Workflow
+
+![fig 2](https://raw.githubusercontent.com/OSGConnect/tutorial-pegasus/master/images/variant-calling.png)
+
+![fig 3](https://raw.githubusercontent.com/OSGConnect/tutorial-pegasus/master/images/variant-calling-data.png)
 
 ## Getting Help
 
