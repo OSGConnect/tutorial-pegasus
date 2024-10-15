@@ -321,9 +321,50 @@ how this compares with our initial workflow run.
 
 ## Variant Calling Workflow
 
+This workflow is based on the Data Carpentry lesson
+[Lesson Data Wrangling and Processing for Genomics](https://datacarpentry.org/wrangling-genomics/).
+
+This workflow downloads and aligns SRA data to the E. coli REL606 reference genome, and checks what differences exist in our reads versus the genome. The workflow also performs perform variant calling to see how the population changed over time.
+
+The inputs are controlled by the `recipe.json` file. With 3 SRA inputs, the structure of the
+workflow becomes:
+
 ![fig 2](https://raw.githubusercontent.com/OSGConnect/tutorial-pegasus/master/images/variant-calling.png)
 
+Rendering the workflow with data:
+
 ![fig 3](https://raw.githubusercontent.com/OSGConnect/tutorial-pegasus/master/images/variant-calling-data.png)
+
+Compared to the `wordfreq` example, a difference is the use of 
+(OSDF)[https://osg-htc.org/services/osdf.html]
+for intermediate data transfers/storage. Note the extra site in the site catalog:
+
+        osdf = (
+            Site("osdf")
+             .add_directories(
+                Directory(
+                    Directory.SHARED_SCRATCH, f"{osdf_local_base}/staging"
+                ).add_file_servers(
+                    FileServer(f"osdf://{osdf_local_base}/staging", Operation.ALL)
+                )
+            )
+        ) 
+
+Which is then referenced when planning the workflow:
+
+            self.wf.plan(
+                dir=str(self.runs_dir),
+                output_dir=str(self.output_dir),
+                sites=["condorpool"],
+                staging_sites={"condorpool": "osdf"},
+
+
+OSDF is recommended for data sizes over 1 GB.
+
+To plan the workflow:
+
+    $ ./workflow.py --recipe recipe.json
+
 
 ## Getting Help
 

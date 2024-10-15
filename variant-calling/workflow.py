@@ -121,6 +121,10 @@ class VariantCallingWorkflow:
         hostname = socket.gethostname()
         hostname = re.sub("\..*", "", hostname)
 
+        # ap40 has a different local hostname
+        if hostname == "ospool-ap2140":
+            hostname = "ap40"
+
         osdf_local_base = f"/ospool/{hostname}/data/{username}"
         if not os.path.exists(osdf_local_base):
             print(f"Unable do determine local OSDF location. Tried {osdf_local_base}")
