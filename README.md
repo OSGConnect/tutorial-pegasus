@@ -130,8 +130,8 @@ When invoked, the workflow script (`workflow.py`) does the following major steps
                   )
                  .add_profiles(
                      Namespace.CONDOR,
-                     key="+SingularityImage",
-                     value='"/cvmfs/singularity.opensciencegrid.org/htc/rocky:9"'
+                     key="container_image",
+                     value="/cvmfs/singularity.opensciencegrid.org/htc/rocky:9"
                  )
              )
      
@@ -142,7 +142,7 @@ When invoked, the workflow script (`workflow.py`) does the following major steps
      ([Containers - Apptainer/Singularity](https://portal.osg-htc.org/documentation/htc_workloads/using_software/containers-singularity/)),
      the following HTCondor profiles must be
      added to the condorpool execution site: 
-     `+SingularityImage='"/cvmfs/singularity.opensciencegrid.org/htc/rocky:9"'`.
+     `container_image=/cvmfs/singularity.opensciencegrid.org/htc/rocky:9`.
 
   2. Generates the transformation catalog, which specifies the executables used
      in the workflow and contains the locations where they are physically located.

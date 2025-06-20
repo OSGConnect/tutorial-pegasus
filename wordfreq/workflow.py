@@ -86,8 +86,8 @@ class WordfreqWorkflow:
              )
             .add_profiles(
                 Namespace.CONDOR, 
-                key="+SingularityImage", 
-                value='"/cvmfs/singularity.opensciencegrid.org/htc/rocky:9"'
+                key="container_image", 
+                value="/cvmfs/singularity.opensciencegrid.org/htc/rocky:9"
             )
         )
 
